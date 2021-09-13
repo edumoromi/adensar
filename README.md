@@ -27,7 +27,7 @@ Adensar é uma aplicação que atua pela qualidade e preservação do meio ambie
 
 
 ## DIAGRAMAS
-![alt text](http://url/to/diagrama1.png)
-![alt text](http://url/to/diagrama2.png)
+![Screenshot](diagrama2.png)
+![Screenshot](diagrama1.png)
 
 
