@@ -1,0 +1,67 @@
+- name: 1 - Criando servidor web
+  hosts: webserver
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: install apache webserver in ubuntu server.
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+
+    - name: start Apache2 server.
+      service:
+        name: apache2
+        state: started
+
+    - name: Get the install apache version
+      command: 'apache2 -v'
+      register: version
+
+- hosts: dbserver
+  handlers:
+    - name: restart mysql
+      service:
+        name: mysql
+        state: restarted
+      become: yes
+
+  tasks:
+    - name: 'Instalar MySQL Server'
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600 #1 hora
+        name: ["mysql-server-5.7", "python3-mysqldb"]
+        state: latest
+      become: yes
+
+    - name: 'Criar usuario no MySQL'
+      mysql_user:
+        login_user: root
+        name: user
+        password: pass
+        priv: '*.*:ALL'
+        host: '%'
+        state: present
+      become: yes
+
+    - name: 'Copiar arquivo mysqld.cnf'
+      copy:
+        src: /vagrant/configs/mysqld.cnf
+        dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+        owner: root
+        group: root
+        mode: 0644
+      become: yes
+      notify:
+        - restart mysql
+
+    - name: 'Criar database'  
+      mysql_db: name=adensar state=present login_user=root login_password=pass  
+       
+    - name: 'Criar tabelas' 
+      copy: src=criaTabelas.sql dest=\vagrant\configs\ansible\criaTabelas.sql  
+       
+    - name: 'Roda SQL'  
+      mysql_db: name=testdb state=import target=\vagrant\configs\ansiblecriaTabelas.sql login_user=root login_password=pass
